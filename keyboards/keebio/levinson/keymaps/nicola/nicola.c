@@ -22,7 +22,7 @@ static uint8_t ncl_keycount = 0; // シフトキーも含めた入力のカウ�
 static uint8_t ncl_modcount = 0; // modifierキー入力のカウンタ
 static bool ncl_rshift = false; // 右シフトキーの状態
 static bool ncl_lshift = false; // 左シフトキーの状態
-//static bool ncl_modrelease = false; // 全てのmodifierがリリースされた状態
+static bool ncl_modifier_active = false;  // modifierがアクティブだったかを記録
 
 // 文字入力バッファ
 static uint16_t ninputs[5];
@@ -123,21 +123,28 @@ bool process_nicola(uint16_t keycode, keyrecord_t *record, uint8_t ncl_layer, ui
   if (is_modifier) {
     if (record->event.pressed) {
       ncl_modcount++;
+      ncl_modifier_active = true;
     } else {
       if (ncl_modcount > 0) {
         ncl_modcount--;
       }
     }
-    return true;  // modifierは通常処理を行う
+    return true;
   }
 
   // modifierが押されている場合は通常のキー処理
   if (ncl_modcount > 0) {
-    // modifierと一緒にキーが押された場合、NICOLAバッファをクリア
     if (record->event.pressed) {
       ncl_clear();
     }
     return true;  // Ctrl+C, Alt+Tab等を正常に処理
+  }
+
+  // modifierが離された直後はNICOLA処理をスキップ
+  if (ncl_modifier_active && ncl_modcount == 0) {
+    ncl_modifier_active = false;
+    ncl_clear();
+    return true;
   }
 
   if (layer_state_is(ncl_layer) & !is_modifier) {
