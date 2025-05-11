@@ -1,0 +1,6 @@
+RGBLIGHT_ENABLE = yes
+BACKLIGHT_ENABLE = yes
+AUDIO_ENABLE = no
+COMBO_ENABLE = yes
+
+SRC += nicola.c
